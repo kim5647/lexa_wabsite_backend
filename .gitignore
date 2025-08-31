@@ -1,0 +1,23 @@
+# Скомпилированные бинарники
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.out
+
+# Go кэш и временные файлы
+/bin/
+/pkg/
+/build/
+*.test
+*.prof
+
+# Зависимости Go
+/vendor/
+
+# Локальные файлы IDE/редакторов
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
