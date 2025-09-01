@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./migration"   # Путь к схеме
+    queries: "./query"      # Путь к запросам (относительно расположения sqlc.yaml)
+    gen:
+      go:
+        package: "db"
+        sql_package: "pgx/v5"
+        out: "./sqlc"
+        emit_interface: false
+        

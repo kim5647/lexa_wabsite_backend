@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"lexa_wabsite_backend/config"
+)
 
 func main() {
-	fmt.Println("hi")
+	config.Config()
 }
