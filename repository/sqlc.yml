@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./migration"  # Путь к схеме
+    queries: "./query"     # Путь к запросам
+    gen:
+      go:
+        package: "repository"
+        sql_package: "pgx/v5"
+        out: "./sqlc"      # Сгенерированные файлы будут в папке ./sqlc
+        emit_interface: false
+        emit_json_tags: true            # <-- ДОБАВЛЕНО: Генерирует теги `json:"..."`
+        # emit_prepared_statements: true  # <-- ДОБАВЛЕНО: Улучшает производительность
