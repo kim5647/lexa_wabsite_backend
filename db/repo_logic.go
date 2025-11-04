@@ -1,7 +1,7 @@
 package repository
 
 // Импортируем сгенерированный SQLC-код, который вы назвали 'sqlc'
-import sqlc "lexa_wabsite_backend/repository/sqlc"
+import sqlc "lexa_wabsite_backend/db/sqlc"
 
 // UserRepository — это ваша пользовательская структура репозитория.
 // Она должна содержать сгенерированные запросы.

@@ -3,11 +3,68 @@
 //   sqlc v1.30.0
 // source: users.sql
 
-package repository
+package db
 
 import (
 	"context"
 )
+
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (
+    name,
+    hash_password,
+    phone,
+    email
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, name, hash_password, phone, email
+`
+
+type CreateUserParams struct {
+	Name         string `json:"name"`
+	HashPassword string `json:"hash_password"`
+	Phone        string `json:"phone"`
+	Email        string `json:"email"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Name,
+		arg.HashPassword,
+		arg.Phone,
+		arg.Email,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.HashPassword,
+		&i.Phone,
+		&i.Email,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, hash_password, phone, email
+FROM users
+WHERE email = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.HashPassword,
+		&i.Phone,
+		&i.Email,
+	)
+	return i, err
+}
 
 const getUsers = `-- name: GetUsers :many
 SELECT id, name, hash_password, phone, email FROM users

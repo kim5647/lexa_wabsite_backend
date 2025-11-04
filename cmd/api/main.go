@@ -1,10 +1,11 @@
 package main
 
 import (
+	repository "lexa_wabsite_backend/db"
+	sqlc "lexa_wabsite_backend/db/sqlc"
 	"lexa_wabsite_backend/handlers"
-	repository "lexa_wabsite_backend/repository"
-	sqlc "lexa_wabsite_backend/repository/sqlc"
 	"lexa_wabsite_backend/router"
+	"lexa_wabsite_backend/service"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -18,17 +19,18 @@ func main() {
 	}
 	defer conn.Close()
 
-	// --- 2. Инициализация слоев ---
-
 	// 2.1. Инициализация Репозитория.
-	// New(conn) находится в сгенерированном sqlcgen.
 	sqlQueries := sqlc.New(conn)
+	// userRepo находится в пакете 'db' (по вашему импорту)
+	userRepo := repository.NewUserRepository(sqlQueries)
 
 	// 2.2. Инициализация Сервисов
-	// authService := service.NewAuthService(userRepo)
-	userRepo := sqlc.NewUserRepository(sqlQueries)
-	// 2.3. Инициализация Обработчиков (Последняя ошибка!)
-	userHandler := handlers.NewUserHandler(userRepo) // <-- Требует реализации Register
+	// 💡 Создаем сервис, передавая в него репозиторий
+	authService := service.NewAuthService(userRepo)
+
+	// 2.3. Инициализация Обработчиков
+	// 💡 ПЕРЕДАЕМ СЕРВИС (authService) в Handler
+	userHandler := handlers.NewUserHandler(authService)
 
 	// --- 3. Запуск ---
 	deps := &router.Dependencies{UserHandler: userHandler}

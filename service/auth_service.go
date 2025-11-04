@@ -1,22 +1,25 @@
 package service
 
 import (
-	"errors" // Для создания пользовательских ошибок (например, "пользователь уже существует")
+	"context"
+	"errors"
+	sqlc "lexa_wabsite_backend/db/sqlc"
+	"lexa_wabsite_backend/dto"
 
 	"golang.org/x/crypto/bcrypt"
-
-	// Предполагаем, что вы создали пакет 'repository'
-	"lexa_wabsite_backend/dto" // Предполагаем, что у вас есть DTO для регистрации
-	"lexa_wabsite_backend/repository"
 )
 
 const bcryptCost = 12
 
-// --- ИНТЕРФЕЙСЫ (Лучшая Практика) ---
-// IUserRepository - определяет методы, которые AuthService использует в репозитории
 type IUserRepository interface {
-	Create(user repository.User) (repository.User, error)
-	ExistsByEmail(email string) (bool, error)
+	Create(ctx context.Context, user sqlc.User) (sqlc.User, error)
+	ExistsByEmail(ctx context.Context, email string) (bool, error)
+}
+
+type IAuthService interface {
+	// Добавьте методы, которые Handler будет вызывать
+	RegisterNewUser(ctx context.Context, input dto.RegisterRequest) (sqlc.User, error)
+	// ...
 }
 
 // AuthService - структура для логики аутентификации.
@@ -26,7 +29,7 @@ type AuthService struct {
 }
 
 // NewAuthService - конструктор
-func NewAuthService(repo IUserRepository) *AuthService {
+func NewAuthService(repo IUserRepository) IAuthService {
 	return &AuthService{
 		UserRepository: repo,
 	}
@@ -40,24 +43,24 @@ func (s *AuthService) HashPassword(password string) (string, error) {
 
 // RegisterNewUser - принимает DTO (данные от клиента) и создает пользователя.
 // Я заменил 'user: repositiry.User' на DTO (обычно это происходит в Handler, но для примера)
-func (s *AuthService) RegisterNewUser(input dto.RegisterRequest) (repository.User, error) {
+func (s *AuthService) RegisterNewUser(ctx context.Context, input dto.RegisterRequest) (sqlc.User, error) {
 	// 1. Проверка бизнес-правил: существует ли пользователь?
-	exists, err := s.UserRepository.ExistsByEmail(input.Email)
+	exists, err := s.UserRepository.ExistsByEmail(ctx, input.Email)
 	if err != nil {
-		return repository.User{}, err // Ошибка БД
+		return sqlc.User{}, err // Ошибка БД
 	}
 	if exists {
-		return repository.User{}, errors.New("пользователь с таким email уже зарегистрирован")
+		return sqlc.User{}, errors.New("пользователь с таким email уже зарегистрирован")
 	}
 
 	// 2. Хэшируем пароль
 	hashedPassword, err := s.HashPassword(input.Password) // <-- ИСПОЛЬЗУЕМ input.Password!
 	if err != nil {
-		return repository.User{}, err
+		return sqlc.User{}, err
 	}
 
 	// 3. Маппинг: Создаем модель БД (repository.User) с хэшем
-	userModel := repository.User{
+	userModel := sqlc.User{
 		Name:         input.Name,
 		Email:        input.Email,
 		Phone:        input.Phone,
@@ -65,9 +68,9 @@ func (s *AuthService) RegisterNewUser(input dto.RegisterRequest) (repository.Use
 	}
 
 	// 4. Сохраняем через репозиторий
-	createdUser, err := s.UserRepository.Create(userModel)
+	createdUser, err := s.UserRepository.Create(ctx, userModel)
 	if err != nil {
-		return repository.User{}, err
+		return sqlc.User{}, err
 	}
 
 	return createdUser, nil

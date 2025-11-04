@@ -4,6 +4,8 @@ import (
 	// Импортируем сгенерированный SQLC-код
 	"context"
 	sqlc "lexa_wabsite_backend/db/sqlc"
+
+	"github.com/jackc/pgx/v5"
 	// Вам также потребуется пакет service, чтобы получить тип данных User,
 	// если он определен там, или используйте sqlc.User
 )
@@ -26,22 +28,34 @@ func (r *UserRepository) GetUsers(ctx context.Context) ([]sqlc.User, error) {
 	return r.sqlQueries.GetUsers(ctx)
 }
 
-// ExistsByEmail - метод для проверки существования пользователя (Требуется GetUserByEmail в SQLC)
+// ExistsByEmail - Окончательная реализация
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 
-	// ПРЕДПОЛАГАЯ, что у вас есть сгенерированный метод r.sqlQueries.GetUserByEmail:
-	// user, err := r.sqlQueries.GetUserByEmail(ctx, email)
+	// Вызов сгенерированного кода
+	_, err := r.sqlQueries.GetUserByEmail(ctx, email)
 
-	// Если GetUserByEmail возвращает "sql.ErrNoRows", значит, пользователя нет.
-	// Если GetUserByEmail отсутствует, вам нужно его добавить в users.sql.
-
-	// ВРЕМЕННОЕ РЕШЕНИЕ (для компиляции):
-	return false, nil
+	if err != nil && err == pgx.ErrNoRows {
+		return false, nil // Пользователь не найден
+	}
+	if err != nil {
+		return false, err // Ошибка БД
+	}
+	return true, nil // Пользователь найден
 }
 
-// ДОБАВИТЬ: Create - реализует метод Create из service.IUserRepository
+// Create - Окончательная реализация (УСТРАНЯЕТ ОШИБКУ 'missing method Create')
 func (r *UserRepository) Create(ctx context.Context, user sqlc.User) (sqlc.User, error) {
-	// 💡 ВАЖНО: Замените на реальный вызов SQLC (например, r.sqlQueries.CreateUser)
-	// Create User, вероятно, должен принимать параметры, а не структуру User целиком.
-	return user, nil
+	// 1. Создаем параметры из структуры User
+	params := sqlc.CreateUserParams{
+		Name:         user.Name,
+		HashPassword: user.HashPassword,
+		Phone:        user.Phone,
+		Email:        user.Email,
+	}
+
+	// 2. Вызываем сгенерированный SQLC-метод
+	createdUser, err := r.sqlQueries.CreateUser(ctx, params)
+
+	// 3. Возвращаем результат
+	return createdUser, err
 }
