@@ -3,7 +3,7 @@ package repository
 import (
 	// Импортируем сгенерированный SQLC-код
 	"context"
-	sqlc "lexa_wabsite_backend/db/sqlc"
+	db "lexa_wabsite_backend/db/sqlc"
 
 	"github.com/jackc/pgx/v5"
 	// Вам также потребуется пакет service, чтобы получить тип данных User,
@@ -13,17 +13,17 @@ import (
 // UserRepository - структура, которая реализует service.IUserRepository.
 type UserRepository struct {
 	// Внедряем сгенерированный объект Queries
-	sqlQueries *sqlc.Queries
+	sqlQueries *db.Queries
 }
 
 // NewUserRepository - ЭКСПОРТИРУЕМЫЙ конструктор (УСТРАНЯЕТ ОШИБКУ В main.go)
-func NewUserRepository(q *sqlc.Queries) *UserRepository {
+func NewUserRepository(q *db.Queries) *UserRepository {
 	return &UserRepository{
 		sqlQueries: q,
 	}
 }
 
-func (r *UserRepository) GetUsers(ctx context.Context) ([]sqlc.User, error) {
+func (r *UserRepository) GetUsers(ctx context.Context) ([]db.User, error) {
 	// Вызов сгенерированного кода
 	return r.sqlQueries.GetUsers(ctx)
 }
@@ -44,9 +44,9 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 }
 
 // Create - Окончательная реализация (УСТРАНЯЕТ ОШИБКУ 'missing method Create')
-func (r *UserRepository) Create(ctx context.Context, user sqlc.User) (sqlc.User, error) {
+func (r *UserRepository) Create(ctx context.Context, user db.User) (db.User, error) {
 	// 1. Создаем параметры из структуры User
-	params := sqlc.CreateUserParams{
+	params := db.CreateUserParams{
 		Name:         user.Name,
 		HashPassword: user.HashPassword,
 		Phone:        user.Phone,

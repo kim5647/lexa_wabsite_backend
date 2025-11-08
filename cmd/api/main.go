@@ -1,8 +1,9 @@
 package main
 
 import (
-	repository "lexa_wabsite_backend/db"
-	sqlc "lexa_wabsite_backend/db/sqlc"
+	database "lexa_wabsite_backend/db"
+	repository "lexa_wabsite_backend/db/repository"
+	db "lexa_wabsite_backend/db/sqlc"
 	"lexa_wabsite_backend/handlers"
 	"lexa_wabsite_backend/router"
 	"lexa_wabsite_backend/service"
@@ -13,14 +14,14 @@ import (
 
 func main() {
 	// 1. Подключение к БД
-	conn, err := repository.ConnectPool() // <--- Используем 'database'
+	conn, err := database.ConnectPool() // <--- Используем 'database'
 	if err != nil {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
 	}
 	defer conn.Close()
 
 	// 2.1. Инициализация Репозитория.
-	sqlQueries := sqlc.New(conn)
+	sqlQueries := db.New(conn)
 	// userRepo находится в пакете 'db' (по вашему импорту)
 	userRepo := repository.NewUserRepository(sqlQueries)
 
