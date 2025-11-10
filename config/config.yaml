@@ -1,0 +1,3 @@
+server:
+  jwt_secret: "c451ef2940b5df5d2a618b8e99380bf3"
+  jwt_expiration_hours: 24
