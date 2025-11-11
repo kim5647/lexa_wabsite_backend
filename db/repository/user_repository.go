@@ -59,3 +59,11 @@ func (r *UserRepository) Create(ctx context.Context, user db.User) (db.User, err
 	// 3. Возвращаем результат
 	return createdUser, err
 }
+
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (db.User, error) {
+	user, err := r.sqlQueries.GetUserByEmail(ctx, email)
+	if err != nil && err == pgx.ErrNoRows {
+		return db.User{}, err
+	}
+	return user, err
+}
