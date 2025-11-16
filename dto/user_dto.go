@@ -2,7 +2,6 @@ package dto
 
 // RegisterRequest - Модель для входящего запроса POST /users
 type RegisterRequest struct {
-	// Клиент отправляет чистый пароль
 	Name     string `json:"name" binding:"required"`
 	Phone    string `json:"phone" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
@@ -13,4 +12,9 @@ type RegisterRequest struct {
 type UpdateUserRequest struct {
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
