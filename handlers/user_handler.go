@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"lexa_wabsite_backend/dto"
 	"lexa_wabsite_backend/service"
 	"net/http"
 
@@ -17,8 +18,22 @@ func NewUserHandler(authService service.IAuthService) *UserHandler {
 	}
 }
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	// Внутри этого метода вы будете вызывать: h.AuthService.RegisterNewUser(...)
-	c.JSON(http.StatusOK, "Ты лучший")
+	var req dto.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
+		return
+	}
+
+	createdUser, err := h.AuthService.Register(c.Request.Context(), req)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Пользователь успешно зарегистрирован",
+		"user_id": createdUser.ID,
+	})
 }
 
 // ДОБАВИТЬ: Метод GetUsers

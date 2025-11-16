@@ -11,7 +11,7 @@ import (
 // Имя должно быть ConnectPool, чтобы его можно было вызвать в main.go.
 func ConnectPool() (*pgxpool.Pool, error) {
 	// В реальном проекте connStr берется из os.Getenv("DATABASE_URL")
-	connStr := "postgres://postgres:3006@localhost:5432/lexa_group?sslmode=disable"
+	connStr := "postgres://postgres:3006@localhost:3006/lexa_group?sslmode=disable"
 
 	pool, err := pgxpool.New(context.Background(), connStr)
 
